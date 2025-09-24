@@ -103,75 +103,7 @@
       color: #94a3b8;
       text-align: center;
     }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>VIP Login</h1>
-    <p>Code ထည့်ပြီး သင့်ရဲ့ link ကို access လုပ်ပါ</p>
-
-    <input id="codeInput" placeholder="Enter code (e.g. 75qHEC)" autocomplete="off">
-    <button id="submitBtn">ဝင်မည်</button>
-  </div>
-<!-- https://sheets.googleapis.com/v4/spreadsheets/1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM/values/Sheet2!A2:D100?key=AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348 -->
-<script>
-const SHEET_ID = '1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM';
-const SHEET_NAME = 'Sheet2';
-
-let dataMap = null;
-function showMsg(text, type){
-  const fb = document.getElementById('feedback');
-  fb.innerHTML = '';
-  if(!text) return;
-  const div = document.createElement('div');
-  div.className = type;
-  div.textContent = text;
-  fb.appendChild(div);
-}
-async function fetchSheet(){
-  if(!SHEET_ID.includes('PUT_YOUR')){
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-    try{
-      const res = await fetch(url);
-      const txt = await res.text();
-      const jsonText = txt.substring(txt.indexOf('{'), txt.lastIndexOf('}')+1);
-      const obj = JSON.parse(jsonText);
-      const cols = obj.table.cols.map(c => (c.label||'').toLowerCase().trim());
-      const rows = obj.table.rows||[];
-      dataMap = {};
-      rows.forEach(r=>{
-        const values = r.c.map(c=>c?c.v:'');
-        const code = values[cols.indexOf('codes')];
-        const link = values[cols.indexOf('link')];
-        if(code) dataMap[code.trim()] = link.trim();
-      });
-    }catch(e){console.error(e);}
-  }
-}
-function tryLogin(){
-  const input = document.getElementById('codeInput').value.trim();
-  if(!input){showMsg('ကျေးဇူးပြု၍ code ထည့်ပါ','error');return;}
-  if(!dataMap){showMsg('Sheet မ load ရသေးပါ','error');return;}
-  const link = dataMap[input];
-  if(link){
-    showMsg('Code ကိုက်ပါတယ်၊ redirect လုပ်နေပါတယ်...','ok');
-    setTimeout(()=>window.location.href=link,800);
-  }else{
-    showMsg('Code မတွေ့ပါ','error');
-  }
-}
-document.getElementById('submitBtn').onclick = tryLogin;
-document.getElementById('codeInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter') tryLogin();
-});
-fetchSheet();
-</script>
-
-
-
-
-
-<style>
+  /* code one time */
   #access-denied {
     display: none;
     color: #fff;
@@ -210,15 +142,76 @@ fetchSheet();
     30%, 50%, 70% { transform: translateX(-8px); }
     40%, 60% { transform: translateX(8px); }
   }
-</style>
+  /* End */
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Download</h1>
+    <p>Code ထည့်ပြီး သင့်ရဲ့ link ကို access လုပ်ပါ</p>
 
-<div id="access-denied">
+    <input id="codeInput" placeholder="Enter code (e.g. 75qHEC)" autocomplete="off">
+    <button id="submitBtn">Go To Link</button>
+  </div>
+
+  <div id="access-denied">
   <span class="icon">❌</span>
   <div class="desc">Access Denied or Session Expired.<br>Please visit via <span style="color:#ffe066;text-shadow:0 0 6px #fff">official link</span>.</div>
 </div>
-
+<!-- https://sheets.googleapis.com/v4/spreadsheets/1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM/values/Sheet2!A2:D100?key=AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348 -->
 <script>
-  (function() {
+const SHEET_ID = '1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM';
+const SHEET_NAME = 'Sheet2';
+
+let dataMap = null;
+function showMsg(text, type){
+  const fb = document.getElementById('feedback');
+  fb.innerHTML = '';
+  if(!text) return;
+  const div = document.createElement('div');
+  div.className = type;
+  div.textContent = text;
+  fb.appendChild(div);
+}
+async function fetchSheet(){
+  if(!SHEET_ID.includes('PUT_YOUR')){
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    try{
+      const res = await fetch(url);
+      const txt = await res.text();
+      const jsonText = txt.substring(txt.indexOf('{'), txt.lastIndexOf('}')+1);
+      const obj = JSON.parse(jsonText);
+      const cols = obj.table.cols.map(c => (c.label||'').toLowerCase().trim());
+      const rows = obj.table.rows||[];
+      dataMap = {};
+      rows.forEach(r=>{
+        const values = r.c.map(c=>c?c.v:'');
+        const code = values[cols.indexOf('codes')];
+        const link = values[cols.indexOf('link')];
+        if(code) dataMap[code.trim()] = link.trim();
+      });
+    }catch(e){console.error(e);}
+  }
+}
+function tryLogin(){
+  const input = document.getElementById('codeInput').value.trim();
+  if(!input){showMsg('Please Ender Code','error');return;}
+  if(!dataMap){showMsg('Sheet မ load ရသေးပါ','error');return;}
+  const link = dataMap[input];
+  if(link){
+    showMsg('Code ကိုက်ပါတယ်၊ redirect လုပ်နေပါတယ်...','ok');
+    setTimeout(()=>window.location.href=link,800);
+  }else{
+    showMsg('Code Not Found','error');
+  }
+}
+document.getElementById('submitBtn').onclick = tryLogin;
+document.getElementById('codeInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') tryLogin();
+});
+fetchSheet();
+
+(function() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const expectedToken = 'ouo123';
@@ -269,6 +262,5 @@ fetchSheet();
     }
   })();
 </script>
-  
 </body>
 </html>
