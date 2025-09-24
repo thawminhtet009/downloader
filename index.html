@@ -1,69 +1,76 @@
 <!doctype html>
 <html lang="my">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login (Google Sheet + Token Expire)</title>
-  <style>
-    body {margin:0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Poppins',sans-serif; background:radial-gradient(circle at top left,#0f172a,#1e293b 60%,#000); color:#f1f5f9; overflow:hidden;}
-    body::before, body::after {content:""; position:absolute; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(99,102,241,0.6),transparent 70%); animation:float 12s infinite ease-in-out alternate; z-index:-1;}
-    body::after {background:radial-gradient(circle,rgba(236,72,153,0.6),transparent 70%); top:40%; left:60%; animation-duration:18s;}
-    @keyframes float {from {transform:translateY(0) translateX(0);} to {transform:translateY(-40px) translateX(30px);}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login (Google Sheet + Token Expire)</title>
+<style>
+  body { margin:0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Poppins',sans-serif; background: radial-gradient(circle at top left,#0f172a,#1e293b 60%,#000); color:#f1f5f9; overflow:hidden; }
+  body::before, body::after { content:""; position:absolute; width:500px; height:500px; border-radius:50%; background: radial-gradient(circle,rgba(99,102,241,0.6),transparent 70%); animation: float 12s infinite ease-in-out alternate; z-index:-1; }
+  body::after { background: radial-gradient(circle,rgba(236,72,153,0.6),transparent 70%); top:40%; left:60%; animation-duration: 18s; }
+  @keyframes float { from { transform:translateY(0) translateX(0);} to { transform:translateY(-40px) translateX(30px);} }
 
-    .card {width:380px; padding:40px 28px; border-radius:20px; background:rgba(17,25,40,0.75); backdrop-filter:blur(20px) saturate(180%); border:1px solid rgba(255,255,255,0.08); box-shadow:0 0 25px rgba(59,130,246,0.3); animation:fadeIn 1s ease forwards;}
-    @keyframes fadeIn {from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);}}
-    h1 {margin:0 0 10px; font-size:26px; text-align:center; font-weight:700; background:linear-gradient(90deg,#60a5fa,#c084fc,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:glow 2.5s ease-in-out infinite alternate;}
-    @keyframes glow {from {text-shadow:0 0 6px #60a5fa,0 0 12px #3b82f6;} to {text-shadow:0 0 8px #c084fc,0 0 16px #ec4899;}}
-    p {margin:0 0 20px; font-size:14px; text-align:center; color:#cbd5e1;}
-    input {width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:#f1f5f9; font-size:15px; outline:none; transition:0.3s;}
-    input:focus {border-color:#8b5cf6; box-shadow:0 0 12px #8b5cf6aa;}
-    button {width:100%; margin-top:18px; padding:14px; border-radius:12px; border:none; background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899); color:#fff; font-weight:600; font-size:15px; cursor:pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;}
-    button:hover {transform:translateY(-2px) scale(1.02); box-shadow:0 0 18px rgba(236,72,153,0.6);}
-    .error,.ok {padding:10px; border-radius:10px; margin-top:14px; font-size:14px; text-align:center;}
-    .error {background:rgba(239,68,68,0.2); color:#fca5a5;}
-    .ok {background:rgba(34,197,94,0.2); color:#86efac;}
-    #feedback {min-height:20px;}
+  .card { width:380px; padding:40px 28px; border-radius:20px; background: rgba(17,25,40,0.75); backdrop-filter: blur(20px) saturate(180%); border:1px solid rgba(255,255,255,0.08); box-shadow: 0 0 25px rgba(59,130,246,0.3); animation: fadeIn 1s ease forwards; }
+  @keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
 
-    #access-denied {display:none; color:#fff; background:linear-gradient(135deg,#ff416c,#ff4b2b 80%); padding:38px 32px; text-align:center; font-weight:bold; font-size:24px; border-radius:18px; margin:80px auto 0 auto; max-width:480px; box-shadow:0 8px 32px rgba(255,65,108,0.18); position:relative; letter-spacing:0.5px; animation:deniedFadeIn 1.2s cubic-bezier(.77,0,.18,1) forwards;}
-    #access-denied .icon {font-size:48px; display:block; margin-bottom:18px; animation:shake 0.7s cubic-bezier(.36,.07,.19,.97) both;}
-    #access-denied .desc {font-size:18px; opacity:0.92; margin-top:8px; line-height:1.5;}
-    @keyframes deniedFadeIn {from {opacity:0; transform:translateY(40px) scale(0.95);} to {opacity:1; transform:translateY(0) scale(1);}}
-    @keyframes shake {10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(4px);}30%,50%,70%{transform:translateX(-8px);}40%,60%{transform:translateX(8px);}}
-  </style>
+  h1 { margin:0 0 10px; font-size:26px; text-align:center; font-weight:700; background: linear-gradient(90deg,#60a5fa,#c084fc,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: glow 2.5s ease-in-out infinite alternate; }
+  @keyframes glow { from { text-shadow:0 0 6px #60a5fa,0 0 12px #3b82f6; } to { text-shadow:0 0 8px #c084fc,0 0 16px #ec4899; } }
+
+  p { margin:0 0 20px; font-size:14px; text-align:center; color:#cbd5e1; }
+  input { width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:#f1f5f9; font-size:15px; outline:none; transition:0.3s; }
+  input:focus { border-color:#8b5cf6; box-shadow:0 0 12px #8b5cf6aa; }
+  button { width:100%; margin-top:18px; padding:14px; border-radius:12px; border:none; background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899); color:#fff; font-weight:600; font-size:15px; cursor:pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  button:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 0 18px rgba(236,72,153,0.6); }
+
+  .error,.ok { padding:10px; border-radius:10px; margin-top:14px; font-size:14px; text-align:center; }
+  .error { background:rgba(239,68,68,0.2); color:#fca5a5; }
+  .ok { background:rgba(34,197,94,0.2); color:#86efac; }
+  #feedback { min-height:20px; }
+
+  #access-denied { display:none; color:#fff; background:linear-gradient(135deg,#ff416c,#ff4b2b 80%); padding:38px 32px; text-align:center; font-weight:bold; font-size:24px; border-radius:18px; margin:80px auto 0 auto; max-width:480px; box-shadow:0 8px 32px rgba(255,65,108,0.18); position:relative; letter-spacing:0.5px; animation: deniedFadeIn 1.2s cubic-bezier(.77,0,.18,1) forwards; }
+  #access-denied .icon { font-size:48px; display:block; margin-bottom:18px; animation: shake 0.7s cubic-bezier(.36,.07,.19,.97) both; }
+  #access-denied .desc { font-size:18px; opacity:0.92; margin-top:8px; line-height:1.5; }
+  @keyframes deniedFadeIn { from { opacity:0; transform:translateY(40px) scale(0.95);} to {opacity:1; transform:translateY(0) scale(1);} }
+  @keyframes shake { 10%,90%{transform:translateX(-2px);}20%,80{transform:translateX(4px);}30%,50%,70%{transform:translateX(-8px);}40%,60%{transform:translateX(8px);} }
+</style>
 </head>
 <body>
 
-  <div class="card" id="login-card">
-    <h1>🚀 Download Access</h1>
-    <p>Enter your code to unlock the link</p>
-    <input id="codeInput" placeholder="Enter code..." autocomplete="off">
-    <button id="submitBtn">Go To Link</button>
-    <div id="feedback"></div>
-  </div>
+<!-- Login Card -->
+<div class="card" id="login-card">
+  <h1>🚀 Download Access</h1>
+  <p>Enter your code to unlock the link</p>
+  <input id="codeInput" placeholder="Enter code..." autocomplete="off">
+  <button id="submitBtn">Go To Link</button>
+  <div id="feedback"></div>
+</div>
 
-  <div id="access-denied">
-    <span class="icon">❌</span>
-    <div class="desc">Access Denied or Session Expired.<br>
-      Please visit via <span style="color:#ffe066;text-shadow:0 0 6px #fff">official link</span>.
-    </div>
-  </div>
+<!-- Access Denied -->
+<div id="access-denied">
+  <span class="icon">❌</span>
+  <div class="desc">Access Denied or Session Expired.<br>
+  Please visit via <span style="color:#ffe066;text-shadow:0 0 6px #fff">official link</span>.</div>
+</div>
 
 <script>
 const SHEET_ID = '1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM';
 const SHEET_NAME = 'Sheet2';
-const expireMinutes = 1; // minutes
+const TOKEN = 'ouo123';
+const EXPIRE_MINUTES = 1;
 let dataMap = null;
 
+// Show message
 function showMsg(text,type){
   const fb = document.getElementById('feedback');
-  fb.innerHTML = '';
+  fb.innerHTML='';
   if(!text) return;
-  const div = document.createElement('div');
-  div.className = type;
-  div.textContent = text;
+  const div=document.createElement('div');
+  div.className=type;
+  div.textContent=text;
   fb.appendChild(div);
 }
 
+// Fetch Google Sheet
 async function fetchSheet(){
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
   try{
@@ -75,7 +82,7 @@ async function fetchSheet(){
     const rows = obj.table.rows||[];
     dataMap = {};
     rows.forEach(r=>{
-      const values = r.c.map(c=>c?c.v:'');
+      const values=r.c.map(c=>c?c.v:'');
       const code = values[cols.indexOf('codes')];
       const link = values[cols.indexOf('link')];
       if(code) dataMap[code.trim()] = link.trim();
@@ -83,12 +90,12 @@ async function fetchSheet(){
   }catch(e){console.error(e);}
 }
 
+// Token system
 function setToken(code){
-  const expireTime = Date.now() + expireMinutes*60*1000;
-  localStorage.setItem('access_code', code);
-  localStorage.setItem('access_code_expire', expireTime);
+  const expireTime = Date.now() + EXPIRE_MINUTES*60*1000;
+  localStorage.setItem('access_code',code);
+  localStorage.setItem('access_code_expire',expireTime);
 }
-
 function isTokenValid(){
   const stored = localStorage.getItem('access_code');
   const expire = localStorage.getItem('access_code_expire');
@@ -97,8 +104,9 @@ function isTokenValid(){
   return true;
 }
 
+// Login attempt
 function tryLogin(){
-  const input = document.getElementById('codeInput').value.trim();
+  const input=document.getElementById('codeInput').value.trim();
   if(!input){showMsg('⚠️ Please Enter Code','error'); return;}
   if(!dataMap){showMsg('📡 Sheet not loaded yet','error'); return;}
   const link = dataMap[input];
@@ -106,31 +114,40 @@ function tryLogin(){
     setToken(input);
     showMsg('✅ Code correct... redirecting','ok');
     setTimeout(()=>window.location.href=link,900);
-  }else showMsg('❌ Invalid Code','error');
+  }else{
+    showMsg('❌ Invalid Code','error');
+  }
 }
 
+// Show denied message
 function showDenied(){
   document.getElementById('login-card').style.display='none';
   document.getElementById('access-denied').style.display='block';
 }
 
-// URL token
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token');
-const expectedToken = 'ouo123';
+// Event listeners
+document.getElementById('submitBtn').onclick=tryLogin;
+document.getElementById('codeInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryLogin(); });
 
 // Init
 fetchSheet().then(()=>{
-  if(token===expectedToken){
-    setToken(token); // accept token from URL
+  // Check URL token first
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToken = urlParams.get('token');
+  if(urlToken===TOKEN){
+    setToken(urlToken);
+    // Clean URL token
+    if(history.replaceState){
+      const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      history.replaceState({}, document.title, cleanUrl);
+    }
   }
+
   if(!isTokenValid()){
     showDenied();
   }
 });
-
-document.getElementById('submitBtn').onclick = tryLogin;
-document.getElementById('codeInput').addEventListener('keydown',e=>{if(e.key==='Enter') tryLogin();});
 </script>
+
 </body>
 </html>
