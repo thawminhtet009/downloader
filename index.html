@@ -103,46 +103,6 @@
       color: #94a3b8;
       text-align: center;
     }
-  /* code one time */
-  #access-denied {
-    display: none;
-    color: #fff;
-    background: linear-gradient(135deg, #ff416c, #ff4b2b 80%);
-    padding: 38px 32px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 24px;
-    border-radius: 18px;
-    margin: 80px auto 0 auto;
-    max-width: 480px;
-    box-shadow: 0 8px 32px rgba(255,65,108,0.18);
-    position: relative;
-    letter-spacing: 0.5px;
-    animation: deniedFadeIn 1.2s cubic-bezier(.77,0,.18,1) forwards;
-  }
-  #access-denied .icon {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 18px;
-    animation: shake 0.7s cubic-bezier(.36,.07,.19,.97) both;
-  }
-  #access-denied .desc {
-    font-size: 18px;
-    opacity: 0.92;
-    margin-top: 8px;
-    line-height: 1.5;
-  }
-  @keyframes deniedFadeIn {
-    from { opacity: 0; transform: translateY(40px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes shake {
-    10%, 90% { transform: translateX(-2px); }
-    20%, 80% { transform: translateX(4px); }
-    30%, 50%, 70% { transform: translateX(-8px); }
-    40%, 60% { transform: translateX(8px); }
-  }
-  /* End */
   </style>
 </head>
 <body>
@@ -152,13 +112,9 @@
 
     <input id="codeInput" placeholder="Enter code (e.g. 75qHEC)" autocomplete="off">
     <button id="submitBtn">Go To Link</button>
+    <div id="feedback"></div> <!-- Added feedback box -->
   </div>
 
-  <div id="access-denied">
-  <span class="icon">❌</span>
-  <div class="desc">Access Denied or Session Expired.<br>Please visit via <span style="color:#ffe066;text-shadow:0 0 6px #fff">official link</span>.</div>
-</div>
-<!-- https://sheets.googleapis.com/v4/spreadsheets/1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM/values/Sheet2!A2:D100?key=AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348 -->
 <script>
 const SHEET_ID = '1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM';
 const SHEET_NAME = 'Sheet2';
@@ -195,7 +151,7 @@ async function fetchSheet(){
 }
 function tryLogin(){
   const input = document.getElementById('codeInput').value.trim();
-  if(!input){showMsg('Please Ender Code','error');return;}
+  if(!input){showMsg('Please Enter Code','error');return;}
   if(!dataMap){showMsg('Sheet မ load ရသေးပါ','error');return;}
   const link = dataMap[input];
   if(link){
@@ -211,6 +167,7 @@ document.getElementById('codeInput').addEventListener('keydown',e=>{
 });
 fetchSheet();
 
+// Token Protect
 (function() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -218,11 +175,10 @@ fetchSheet();
     const expireMinutes = 1;
 
     function setToken(token) {
-      const expireTime = Date.now() + expireMinutes * 60 * 1000; // milliseconds
+      const expireTime = Date.now() + expireMinutes * 60 * 1000; 
       localStorage.setItem('access_token', token);
       localStorage.setItem('access_token_expire', expireTime);
     }
-
     function isTokenValid() {
       const storedToken = localStorage.getItem('access_token');
       const expireTime = localStorage.getItem('access_token_expire');
@@ -231,36 +187,33 @@ fetchSheet();
       if (Date.now() > parseInt(expireTime)) return false;
       return true;
     }
-
     if (token === expectedToken) {
-      // Save token + expire time
       setToken(token);
-
-      // Clean URL
       if (history.replaceState) {
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         history.replaceState({}, document.title, cleanUrl);
       }
-      return; // allow access
+      return; 
     }
-
     if (!isTokenValid()) {
-      // Block access
-      document.body.innerHTML = '';
-      const deniedDiv = document.createElement('div');
-      deniedDiv.id = 'access-denied';
-      deniedDiv.style.color = 'white';
-      deniedDiv.style.backgroundColor = '#d33';
-      deniedDiv.style.padding = '20px';
-      deniedDiv.style.textAlign = 'center';
-      deniedDiv.style.fontWeight = 'bold';
-      deniedDiv.style.fontSize = '18px';
-      deniedDiv.style.borderRadius = '8px';
-      deniedDiv.style.marginTop = '50px';
-      deniedDiv.textContent = '❌ Access Denied or Session Expired. Please visit via official link.';
-      document.body.appendChild(deniedDiv);
+      document.body.innerHTML = `
+        <div style="
+          color:#fff;
+          background:linear-gradient(135deg,#ff416c,#ff4b2b 80%);
+          padding:38px 32px;
+          text-align:center;
+          font-weight:bold;
+          font-size:22px;
+          border-radius:18px;
+          margin:80px auto;
+          max-width:480px;
+          box-shadow:0 8px 32px rgba(255,65,108,0.18);
+        ">
+          ❌ Access Denied or Session Expired.<br>
+          Please visit via <span style="color:#ffe066;text-shadow:0 0 6px #fff">official link</span>.
+        </div>`;
     }
-  })();
+})();
 </script>
 </body>
 </html>
